@@ -51,9 +51,9 @@ The backend application has the following dependencies:
 
 **Clone the repository**:
 
-git clone <https://github.com/kellyhp/alumni-backend>
+git clone https://github.com/Webtools-Alumni-UC-Davis/alumni-backend
 
-```cd backend```
+```cd alumni-backend```
 
 **Install dependencies**:
 
