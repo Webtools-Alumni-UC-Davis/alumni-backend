@@ -179,6 +179,7 @@ router.post('/', async (req, res) => {
             industries: req.body.industries,
             favorite: req.body.favorite
         })
+        scrapeAndPost();
         company.save();
         res.status(201).json(company);
     } catch (error) {
