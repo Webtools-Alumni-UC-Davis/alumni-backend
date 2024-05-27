@@ -35,7 +35,7 @@ router.get('/highest-funding', async (req, res) => {
 router.get('/companies-with-alumni', async (req, res) => {
     try {
         const companies =
-            await Ezen.find({alumni: {$ne: null}}).exec();
+            await Ezen.find({alumnis: {$ne: null}}).exec();
         if (companies.length === 0) {
             return res.status(204).end();
         }
@@ -49,7 +49,9 @@ router.get('/companies-with-alumni', async (req, res) => {
 // get the companies that have their hq in California
 router.get('/california', async (req, res) => {
     try {
-        const companies = await Ezen.find({hq: {$regex: "CA"}})
+        const companies = await Ezen.find({hq: {$regex: "CA"}}).sort({name: 1})
+            .exec();
+
         if (companies.length === 0) {
             return res.status(204).json({message: "No companies with" +
                     " headquarters" +
@@ -70,6 +72,96 @@ router.get("/newest-companies", async (req, res) => {
         res.status(500).json({message: "Error getting newest companies"})
     }
 })
+
+router.get("/favorites", async (req, res) => {
+    try {
+        const favorites = await Ezen.find({favorite: true})
+            .sort({name: 1}).exec();
+        res.status(200).json(favorites);
+    } catch (error) {
+        res.status(500).json({message: "Error getting favorite companies"});
+    }
+})
+
+router.get("/search", async (req, res) => {
+    try {
+        const { keyword, filters, sort } = req.query;
+
+        let query = {}
+
+        if (keyword) {
+            const keywordSearchConditions = [
+                {name: {$regex: keyword, $options: "i"}},
+                {foundingDate: {$regex: keyword, $options: "i"}},
+                {notableInvestors: {$regex: keyword, $options: "i"}},
+                {industries: {$regex: keyword, $options: "i"}},
+                {hq: {$regex: keyword, $options: "i"}}
+            ];
+
+            if (!query.$or) {
+                query.$or = [];
+            }
+
+            keywordSearchConditions.forEach((condition) => {
+                query.$or.push(condition);
+            });
+        }
+
+        if (filters) {
+            const parsedFilters = Array.isArray(filters)
+                ? filters
+                : JSON.parse(filters);
+
+            if (Array.isArray(parsedFilters)) {
+                const filterConditions = parsedFilters.map((filterValue) => {
+                    const fields = [
+                        "name",
+                        "foundingDate",
+                        "notableInvestors",
+                        "industries",
+                        "hq",
+                    ];
+                    const orConditions = fields.map((field) => ({
+                        [field]: { $regex: filterValue, $options: "i" },
+                    }));
+                    return { $or: orConditions };
+                });
+
+                query.$or = query.$or
+                    ? [...query.$or, ...filterConditions]
+                    : filterConditions;
+            }
+        }
+
+        let matchFound = await Ezen.find(query).sort({name: 1}).exec();
+
+        if (sort) {
+            switch (sort) {
+                case 'highest-funding':
+                    matchFound = matchFound.sort(fundingSort);
+                    break;
+                case 'companies-with-alumni':
+                    matchFound = matchFound.filter(company => company.alumnis && company.alumnis.length > 0);
+                    break;
+                case 'california':
+                    matchFound = matchFound.filter(company => /CA/.test(company.hq)).sort((a, b) => a.name.localeCompare(b.name));;
+                    break;
+                case 'newest-companies':
+                    matchFound = matchFound.sort((a, b) => new Date(b.foundingDate) - new Date(a.foundingDate));
+                    break;
+                case 'favorites':
+                    matchFound = matchFound.filter(company => company.favorite);
+                    break;
+            }
+        }
+
+        res.status(200).json(matchFound)
+    } catch (error) {
+        res.status(500).json({ message: "Error executing search request" });
+    }
+})
+
+
 // Add new company and information
 router.post('/', async (req, res) => {
     try {
@@ -97,35 +189,36 @@ router.post('/', async (req, res) => {
 // Update company information, common use case should be to update alumni info
 // received from LinkedIn
 router.put('/', async (req, res) => {
-   try {
+    try {
         const {id} = req.params.id;
         const update = await Ezen.findByIdAndUpdate(id, req.body);
         if (!update) {
             return res.status(404).json({ message: "Not Found"})
         }
         return res.status(200).json(update);
-   } catch (error) {
-       res.status(500).json({ message: 'Error updating Ezen information.' });
-   }
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating Ezen information.' });
+    }
 });
 
 
 // favorite a company
 router.put('/favorite', async (req, res) => {
     try {
-        const ezen = await Ezen.findOneAndUpdate({name: req.query.name},
-            {favorite: true});
+        let ezen = await Ezen.findOne({ name: req.query.name });
 
-        if (ezen === null) {
-            return res.status(404).json({message: req.query.name + " not" +
-                    " found."});
+        if (!ezen) {
+            return res.status(404).json({ message: `${req.query.name} not found.` });
         }
 
-        return res.status(200).json({message: req.query.name + " is now" +
-                " favorite."});
+        ezen.favorite = !ezen.favorite;
+        await ezen.save();
+
+        return res.status(200).json({ message: `${req.query.name} is now ${ezen.favorite ? "favorite" : "not favorite"}.` });
+
     } catch (error) {
-        res.status(500).json({message: req.query.name + " is not" +
-                " favorite."});
+        res.status(500).json({message: "Error updating favorite " +
+                "status of " + req.query.name + "."});
     }
 })
 
@@ -175,7 +268,7 @@ const findAlumni = async () => {
         }
         console.log("Update completed successfully");
     } catch (error) {
-        throw new Error("Error getting company match for alumni.");
+        throw new Error("Error updating alumni list.");
     }
 }
 
@@ -210,7 +303,7 @@ const scrapeAndPost = async () => {
         await passiveScraping();
         await findAlumni();
     } catch (error) {
-        console.error("Error scraping data and posting to database");
+        console.error("Error in scrapeAndPost");
     }
 }
 
@@ -245,7 +338,8 @@ cron.schedule('0 0 * * 1', async () => {
         await scrapeAndPost();
         console.log('Scraping and posting completed successfully');
     } catch (error) {
-        console.error('Error scraping data and posting to database');
+        console.error('Error scraping data and posting to database, for' +
+            ' cronjob');
     }
 }, {
     timezone
