@@ -269,10 +269,9 @@ router.delete('/delete-one', async (req, res) => {
 const findAlumni = async () => {
     try {
         const alumnis = await Alumni.find();
-        const ezen = await Ezen.find();
 
         for (const alumni of alumnis) {
-            const matchFound = ezen.find(ezenMatch => ezenMatch.name === alumni.company);
+            const matchFound = await Ezen.findOne({ name: alumni.company });
 
             if (matchFound) {
                 matchFound.alumnis.push({ name: alumni.name, position:
@@ -282,6 +281,7 @@ const findAlumni = async () => {
         }
         console.log("Update completed successfully");
     } catch (error) {
+        console.log(error.message);
         throw new Error("Error updating alumni list.");
     }
 }
@@ -336,6 +336,7 @@ const scrapeAndPost = async () => {
         await findAlumni();
     } catch (error) {
         console.error("Error in scrapeAndPost");
+        console.log(error.message);
     }
 }
 
@@ -365,7 +366,7 @@ const fundingParse = (funding) => {
 }
 
 let timezone = 'America/Los_Angeles';
-cron.schedule('*/2 * * * *', async () => {
+cron.schedule('0 0 * * 1', async () => {
     try {
         await scrapeAndPost();
         console.log('Scraping and posting completed successfully');
@@ -387,17 +388,5 @@ if (process.env.NODE_ENV !== 'test') {
         }
     })
 }
-
-router.get('/test-scrape', async (req, res) => {
-    console.log('Manual scrape started');
-    try {
-        await scrapeAndPost();
-        console.log('Scraping and posting completed successfully');
-        res.status(200).send('Scraping and posting completed successfully');
-    } catch (error) {
-        console.error('Error in scraping and posting:', error);
-        res.status(500).send('Error in scraping and posting');
-    }
-});
 
 module.exports = router;
