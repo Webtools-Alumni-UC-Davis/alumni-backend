@@ -68,24 +68,12 @@ const scrape = async() => {
 
     let companyDetails = [];
 
-    let fields = new Set();
-
     for (const row of results) {
         const detail = await run(row);
         companyDetails.push(detail);
-        detail.industries.forEach(industry => fields.add(industry));
     }
-
-    console.log(fields)
 
     return companyDetails;
 }
-
-// scrape().then((results) => {
-//     let result;
-//     for(result of results) {
-//         console.log(result)
-//     }
-// })
 
 module.exports = scrape;

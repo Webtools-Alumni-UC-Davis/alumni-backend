@@ -89,14 +89,14 @@ const run = async (url) => {
     });
 
     let company = {
-      "name": null,
-      "foundingDate": null,
-      "notableInvestors": null,
-      "hq": null,
-      "totalFunding": null,
-      "founders": null,
-      "alumnis": null,
-      "bio": null,
+        "name": null,
+        "foundingDate": null,
+        "notableInvestors": null,
+        "hq": null,
+        "totalFunding": null,
+        "founders": null,
+        "alumnis": null,
+        "bio": null,
         "ezenLink": url,
         "industries": null,
         "favorite":false
@@ -129,9 +129,5 @@ const run = async (url) => {
 
     return company;
 }
-
-// run("https://equityzen.com/company/databricks/").then(result => {
-//     console.log(result)
-// })
 
 module.exports = run;
