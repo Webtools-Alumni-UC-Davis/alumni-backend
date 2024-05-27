@@ -264,6 +264,7 @@ const findAlumni = async () => {
             if (matchFound) {
                 matchFound.alumnis.push({ name: alumni.name, position:
                     alumni.job, url: alumni.url});
+                await matchFound.save();
             }
         }
         console.log("Update completed successfully");
@@ -373,5 +374,17 @@ if (process.env.NODE_ENV !== 'test') {
         }
     })
 }
+
+router.get('/test-scrape', async (req, res) => {
+    console.log('Manual scrape started');
+    try {
+        await scrapeAndPost();
+        console.log('Scraping and posting completed successfully');
+        res.status(200).send('Scraping and posting completed successfully');
+    } catch (error) {
+        console.error('Error in scraping and posting:', error);
+        res.status(500).send('Error in scraping and posting');
+    }
+});
 
 module.exports = router;
