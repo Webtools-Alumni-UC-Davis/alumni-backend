@@ -95,10 +95,10 @@ const run = async (url) => {
         "hq": null,
         "totalFunding": null,
         "founders": null,
-        "alumnis": null,
+        "alumnis": [],
         "bio": null,
         "ezenLink": url,
-        "industries": null,
+        "industries": [],
         "favorite":false
     }
 
