@@ -275,23 +275,41 @@ const findAlumni = async () => {
 const passiveScraping = async() => {
     try {
         const results = await scrape();
-        await Ezen.deleteMany({favorite: false });
+        for (let result of results) {
+            const ezen = await Ezen.findOne({ name: result.name });
+            if (!ezen) {
+                const company = new Ezen({
+                    name: result.name,
+                    foundingDate: result.foundingDate,
+                    notableInvestors: result.notableInvestors,
+                    hq: result.hq,
+                    totalFunding: result.totalFunding,
+                    founders: result.founders,
+                    alumnis: result.alumnis,
+                    bio: result.bio,
+                    ezenLink: result.ezenLink,
+                    industries: result.industries,
+                    favorite: result.favorite
+                });
+                await company.save(); // Await the save operation
+            } else {
+                const updates = {};
 
-        for(let result of results) {
-            const company = new Ezen({
-                name: result.name,
-                foundingDate: result.foundingDate,
-                notableInvestors: result.notableInvestors,
-                hq: result.hq,
-                totalFunding: result.totalFunding,
-                founders: result.founders,
-                alumnis: result.alumnis,
-                bio: result.bio,
-                ezenLink: result.ezenLink,
-                industries: result.industries,
-                favorite: result.favorite
-            })
-            company.save();
+                if (ezen.foundingDate !== result.foundingDate) updates.foundingDate = result.foundingDate;
+                if (ezen.notableInvestors !== result.notableInvestors) updates.notableInvestors = result.notableInvestors;
+                if (ezen.hq !== result.hq) updates.hq = result.hq;
+                if (ezen.totalFunding !== result.totalFunding) updates.totalFunding = result.totalFunding;
+                if (ezen.founders !== result.founders) updates.founders = result.founders;
+                if (ezen.alumnis !== result.alumnis) updates.alumnis = result.alumnis;
+                if (ezen.bio !== result.bio) updates.bio = result.bio;
+                if (ezen.ezenLink !== result.ezenLink) updates.ezenLink = result.ezenLink;
+                if (ezen.industries !== result.industries) updates.industries = result.industries;
+                if (ezen.favorite !== result.favorite) updates.favorite = result.favorite;
+
+                if (Object.keys(updates).length > 0) {
+                    await Ezen.updateOne({ _id: ezen._id }, updates);
+                }
+            }
         }
     } catch (error) {
         console.error("Error scraping Equity Zen");
@@ -333,7 +351,7 @@ const fundingParse = (funding) => {
 }
 
 let timezone = 'America/Los_Angeles';
-cron.schedule('0 0 * * 1', async () => {
+cron.schedule('*/2 * * * *', async () => {
     try {
         await scrapeAndPost();
         console.log('Scraping and posting completed successfully');
