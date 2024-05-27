@@ -6,6 +6,18 @@ const cron = require('node-cron');
 const scrape = require('../scrollingEzen');
 
 
+router.get('/test-scrape', async (req, res) => {
+    console.log('Manual scrape started');
+    try {
+        await scrapeAndPost();
+        console.log('Scraping and posting completed successfully');
+        res.status(200).send('Scraping and posting completed successfully');
+    } catch (error) {
+        console.error('Error in scraping and posting:', error);
+        res.status(500).send('Error in scraping and posting');
+    }
+});
+
 // get all the companies that are in the database
 router.get('/', async (req, res) => {
     try {
@@ -179,6 +191,7 @@ router.post('/', async (req, res) => {
             industries: req.body.industries,
             favorite: req.body.favorite
         })
+        await scrapeAndPost();
         company.save();
         res.status(201).json(company);
     } catch (error) {
