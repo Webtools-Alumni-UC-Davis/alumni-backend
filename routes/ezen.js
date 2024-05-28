@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
         const companies = await Ezen.find().sort({name: 1});
         res.status(200).json(companies);
     } catch (error) {
-        res.status(500).json({ message: 'Error getting all companies with UCD alumnus' });
+        res.status(500).json({ message: 'Error getting all companies' });
     }
 });
 
