@@ -4,10 +4,16 @@ const Resend = require('resend').Resend;
 const router = express.Router();
 const Alumni = require("../models/alumni");
 const PrevAlumni = require("../models/prevalumni");
-const { Subscriber } = require('../models/subscribers');
+const Subscriber = require('../models/subscribers');
 
 let emailSchedule = null;
 const resend = new Resend('re_MrGDdqKt_LzmC7r9zFByqWbzwVE741LLM');
+
+jest.mock('node-cron', () => ({
+    schedule: jest.fn(() => ({
+        destroy: jest.fn(),
+    })),
+}));
 
 // Route to check if a user's email is subscribed
 router.get('/check-subscription', async (req, res) => {
@@ -27,7 +33,7 @@ router.get('/check-subscription', async (req, res) => {
       console.error('Error checking subscription:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
-  });
+});
 
 const compareAlumni = async () => {
     try {
@@ -44,11 +50,9 @@ const compareAlumni = async () => {
                     prev.url === current.url
             );
             if (!previous) {
+                return;
             } else {
-                if (
-                    current.job !== previous.job &&
-                    current.company === previous.company
-                ) {
+                if (current.job !== previous.job && current.company === previous.company) {
                     changes.push(
                         `${current.name} has changed position from ${previous.job} to ${current.job} at ${current.company}.`
                     );
@@ -118,12 +122,12 @@ router.post('/subscribe', async (req, res) => {
             scheduleEmails();
         }
 
-        const welcomeMessage = ({
+        const welcomeMessage = {
             from: 'onboarding@resend.dev',
             to: email,
             subject: `Welcome, ${name}!`,
             html: `<p>Thank you for subscribing to our monthly updates!</p>`,
-        });
+        };
         await resend.emails.send(welcomeMessage);
         res.sendStatus(200);
     } catch (error) {
@@ -140,6 +144,8 @@ router.post('/unsubscribe', async (req, res) => {
         if (subscriber) {
             subscriber.subscribed = false;
             await subscriber.save();
+        } else {
+            return res.status(404).json({ message: 'Subscriber not found.' });
         }
 
         const subscribedCount = await Subscriber.countDocuments({ subscribed: true });
@@ -148,12 +154,12 @@ router.post('/unsubscribe', async (req, res) => {
             emailSchedule = null;
         }
 
-        const farewellMessage = ({
+        const farewellMessage = {
             from: 'onboarding@resend.dev',
             to: email,
             subject: 'Goodbye!',
             html: `<p>We're sorry to see you go! You have been unsubscribed from our monthly updates.</p>`,
-        });
+        };
         await resend.emails.send(farewellMessage);
         res.sendStatus(200);
     } catch (error) {
