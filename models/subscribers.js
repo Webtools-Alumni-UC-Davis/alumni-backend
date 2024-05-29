@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const SubscriberSchema = new mongoose.Schema({
     email: { 
         type: String,
-         unique: true, 
-         required: true 
+        unique: true, 
+        required: true 
     },
     name: { 
         type: String, 
@@ -14,8 +14,8 @@ const SubscriberSchema = new mongoose.Schema({
         type: Boolean, 
         default: true 
     },
-  });
-  
-const Subscriber = mongoose.model('subscribers', SubscriberSchema);
-  
+});
+
+const Subscriber = mongoose.model('Subscriber', SubscriberSchema);
+
 module.exports = Subscriber;

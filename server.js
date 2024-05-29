@@ -45,7 +45,7 @@ if (process.env.NODE_ENV === 'test') {
     server.close(() => {
       process.exit(0);
     });
-  }, 30000);
+  }, 10000);
 }
 
 

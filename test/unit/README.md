@@ -1223,3 +1223,164 @@ alumni data handles errors correctly.
 
 -   If the error handling logic in the API is incorrect or incomplete,
     the test may fail to validate the expected behavior.
+
+# **Subscriber Routes**
+
+## **should check subscription status**
+
+This test case verifies that the API endpoint for checking 
+the subscription status of an email works correctly.
+
+**Test Scenario:**
+
+-   The test creates a dummy subscriber document in the 
+    Subscriber collection before running the test.
+
+-   It sends a GET request to the /emails/check-subscription?email=test@example.com endpoint.
+
+-   It expects the response to have a status code of 200 (OK).
+
+-   It asserts that the response body contains a subscribed property with the value true.
+
+**Expected Behavior:**
+
+-   The API should retrieve the subscription status of the given 
+    email from the Subscriber collection.
+
+-   The response should indicate whether the email is subscribed or not.
+
+**Possible Issues:**
+
+-   If the API endpoint or the database operations fail, the test may 
+    fail.
+
+-   If the dummy data creation fails, the test may also fail.
+
+## **should handle error when checking subscription status without email**
+
+This test case verifies that the API endpoint for checking the subscription
+status handles errors correctly when no email is provided.
+
+**Test Scenario:**
+
+-   It sends a GET request to the /emails/check-subscription endpoint 
+    without an email query parameter.
+
+-   It expects the response to have a status code of 400 (Bad Request).
+
+-   It asserts that the response body contains an error property with the value Email is required.
+
+**Expected Behavior:**
+
+-   The API should validate the presence of the email query parameter.
+
+-   The response should indicate that the email is required if it is not provided.
+
+**Possible Issues:**
+
+-   If the validation logic is incorrect or incomplete, the test may fail.
+
+## **should subscribe to email notifications**
+
+This test case verifies that the API endpoint for subscribing to 
+email notifications works correctly.
+
+**Test Scenario:**
+
+-   It sends a POST request to the /emails/subscribe endpoint 
+    with subscriber data.
+
+-  It expects the response to have a status code of 200 (OK).
+
+-  It verifies that the subscriber document is created 
+   in the Subscriber collection with subscribed set to true.
+
+**Expected Behavior:**
+
+- The API should create a new subscriber document in the Subscriber collection.
+
+- The response should confirm that the subscription was successful.
+
+**Possible Issues:**
+
+- If the API endpoint or the database operations fail, the test may fail.
+
+- If the data provided is invalid or incomplete, the test may also fail.
+
+## **should unsubscribe from email notifications**
+
+This test case verifies that the API endpoint for unsubscribing from email notifications works correctly.
+
+**Test Scenario:**
+
+- The test creates a dummy subscriber document in the Subscriber collection with subscribed set to true before running the test.
+
+- It sends a POST request to the /emails/unsubscribe endpoint with the email of the subscriber.
+
+- It expects the response to have a status code of 200 (OK).
+
+-It verifies that the subscribed property of the subscriber document is set to false.
+
+**Expected Behavior:**
+
+- The API should update the subscriber document in the Subscriber collection to set subscribed to false.
+
+- The response should confirm that the unsubscription was successful.
+
+**Possible Issues:**
+
+- If the API endpoint or the database operations fail, the test may fail.
+
+- If the dummy data creation fails, the test may also fail.
+
+## **should handle errors when subscribing to email notifications**
+
+This test case verifies that the API endpoint for subscribing to email notifications handles errors correctly.
+
+**Test Scenario:**
+
+- The test mocks the save method of the Subscriber model to throw an error using Jest's mocking capabilities.
+
+- It sends a POST request to the /emails/subscribe endpoint with subscriber data.
+
+- It expects the response to have a status code of 500 (Internal Server Error).
+
+- It asserts that the response body contains an error message.
+
+**Expected Behavior:**
+
+- If an error occurs while saving the subscriber data to the database, the API should handle the error gracefully and return an appropriate error response.
+
+- The response should have a 500 status code and include an error message indicating that there was an issue with the subscription.
+
+**Possible Issues:**
+
+- If the error mocking or Jest mocking setup is incorrect, the test may fail.
+
+- If the error handling logic in the API is incorrect or incomplete, the test may fail to validate the expected behavior.
+
+## **should handle errors when unsubscribing from email notifications**
+
+This test case verifies that the API endpoint for unsubscribing from email notifications handles errors correctly.
+
+**Test Scenario:**
+
+- The test mocks the findOne method of the Subscriber model to throw an error using Jest's mocking capabilities.
+
+- It sends a POST request to the /emails/unsubscribe endpoint with the email of the subscriber.
+
+- It expects the response to have a status code of 500 (Internal Server Error).
+
+- It asserts that the response body contains an error message.
+
+**Expected Behavior:**
+
+- If an error occurs while updating the subscriber data in the database, the API should handle the error gracefully and return an appropriate error response.
+
+- The response should have a 500 status code and include an error message indicating that there was an issue with the unsubscription.
+
+**Possible Issues:**
+
+- If the error mocking or Jest mocking setup is incorrect, the test may fail.
+
+- If the error handling logic in the API is incorrect or incomplete, the test may fail to validate the expected behavior.
