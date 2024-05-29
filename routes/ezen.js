@@ -355,17 +355,6 @@ const fundingParse = (funding) => {
 }
 
 let timezone = 'America/Los_Angeles';
-cron.schedule('0 0 * * 1', async () => {
-    try {
-        await scrapeAndPost();
-        console.log('Scraping and posting completed successfully');
-    } catch (error) {
-        console.error('Error scraping data and posting to database, for' +
-            ' cronjob');
-    }
-}, {
-    timezone
-});
 
 if (process.env.NODE_ENV !== 'test') {
     cron.schedule('0 0 * * 1', async () => {
