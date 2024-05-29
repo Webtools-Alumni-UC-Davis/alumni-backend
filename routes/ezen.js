@@ -6,18 +6,6 @@ const cron = require('node-cron');
 const scrape = require('../scrollingEzen');
 
 
-router.get('/test-scrape', async (req, res) => {
-    console.log('Manual scrape started');
-    try {
-        await scrapeAndPost();
-        console.log('Scraping and posting completed successfully');
-        res.status(200).send('Scraping and posting completed successfully');
-    } catch (error) {
-        console.error('Error in scraping and posting:', error);
-        res.status(500).send('Error in scraping and posting');
-    }
-});
-
 // get all the companies that are in the database
 router.get('/', async (req, res) => {
     try {
@@ -47,7 +35,7 @@ router.get('/highest-funding', async (req, res) => {
 router.get('/companies-with-alumni', async (req, res) => {
     try {
         const companies =
-            await Ezen.find({alumnis: {$ne: null}}).exec();
+            await Ezen.find({alumnis: { $exists: true, $not: { $size: 0 } } }).exec();
         if (companies.length === 0) {
             return res.status(204).end();
         }
@@ -191,7 +179,6 @@ router.post('/', async (req, res) => {
             industries: req.body.industries,
             favorite: req.body.favorite
         })
-        await scrapeAndPost();
         company.save();
         res.status(201).json(company);
     } catch (error) {
@@ -199,17 +186,19 @@ router.post('/', async (req, res) => {
     }
 })
 
+
 // Update company information, common use case should be to update alumni info
 // received from LinkedIn
 router.put('/', async (req, res) => {
     try {
-        const {id} = req.params.id;
-        const update = await Ezen.findByIdAndUpdate(id, req.body);
+        const id = {name: req.query.name};
+        const update = await Ezen.findOneAndUpdate(id, req.body);
         if (!update) {
             return res.status(404).json({ message: "Not Found"})
         }
         return res.status(200).json(update);
     } catch (error) {
+        console.error(error.message);
         res.status(500).json({ message: 'Error updating Ezen information.' });
     }
 });
