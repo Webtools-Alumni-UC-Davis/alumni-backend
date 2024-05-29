@@ -407,7 +407,7 @@ The equity-zen endpoint (filed as Ezen) will handle passive scraping and the dat
 | **Endpoint**               | <https://webtools-api.engr.ucdavis.edu/equity-zen/favorite>                      |  
 | **Description**            | Toggles the favorite status of a company.                                        |  
 | **Parameters**             | `name` : the name of the company to toggle favorite status                       |  
-| **Example Usage**          | PUT "<https://webtools-api.engr.ucdavis.edu/equity-zen/favorite?name=Tech Corp>" |  
+| **Example Usage**          | PUT "<https://webtools-api.engr.ucdavis.edu/equity-zen/favorite?name=TechCorp>" |  
 | **Example Response**       | {"message": "Tech Corp is now favorite."}                                        |  
 | **Example Error Response** | "message": "Error updating favorite status of Tech Corp."                        |  
 
@@ -427,6 +427,6 @@ The equity-zen endpoint (filed as Ezen) will handle passive scraping and the dat
 | **Endpoint**               | <https://webtools-api.engr.ucdavis.edu/equity-zen/delete-one> |  
 | **Description**            | Deletes the company by name provided in parameters.           |  
 | **Parameters**             | `name` : the name of the company to toggle delete             |  
-| **Example Usage**          | DELETE "<https://webtools-api.engr.ucdavis.edu/equity-zen>"   |  
+| **Example Usage**          | DELETE "<https://webtools-api.engr.ucdavis.edu/equity-zen/delete-one?name=TechCorp>"   |  
 | **Example Response**       | {"message": "Tech Corp deleted succesfully."}                 |  
 | **Example Error Response** | "message": "Error deleting TechCorp."                         |
