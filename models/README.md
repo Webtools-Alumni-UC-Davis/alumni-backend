@@ -37,11 +37,12 @@ This schema stores information about companies listed on the EquityZen site, inc
 - **notableInvestors**: Notable investors in the company.
 - **hq**: The headquarters location of the company.
 - **totalFunding**: The total funding received by the company.
-- **fundingRecord**: A record of funding rounds, each with a period and amount.
 - **founders**: A list of the founders, each with their position and name.
 - **alumnis**: A list of alumni associated with the company, each with their name, position, and URL.
 - **bio**: A biography of the company. (Required)
 - **ezenLink**: A URL link to the company's profile on the EquityZen platform. (Required)
+- **industries**: A list of the industries that the company aligns themselves with.
+- **favorite**: A boolean value indicating whether a company is favorited by the client or not. 
 
 #### **Subscribers Schema**
 
