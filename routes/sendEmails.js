@@ -40,7 +40,7 @@ function getEmails(remote_user){
             }
 
             res.on("searchEntry", (entry) => {
-                console.log("Raw Entry:", entry);
+                console.log("Raw Entry:", entry.log.child);
                 if (entry) {
                     console.log("Entry:", entry.object);
                 } else {
