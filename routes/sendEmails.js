@@ -19,7 +19,7 @@ const resend = new Resend('re_MrGDdqKt_LzmC7r9zFByqWbzwVE741LLM');
 
 
 // Get Email of the employees from UC Davis servers
-function getEmails(remote_user) {
+async function getEmails(remote_user) {
     const client = ldap.createClient({
         url: "ldaps://ldap.ucdavis.edu:636",
     });
@@ -58,14 +58,13 @@ function getEmails(remote_user) {
 
                 res.on("end", (result) => {
                     console.log("status: " + result.status);
-                    console.log(mail, displayName);
                     return mail, displayName;
                 });
             }
         );
     } catch (error) {
         console.error("An error occurred:", error);
-        // Handle the error as needed
+        return "Not Found", "Not Found";
     }
 }
 
@@ -164,9 +163,8 @@ router.post('/subscribe', async (req, res) => {
         if (!remote_user) {
             // email, name  = req.body;
         } else {
-            email, name = getEmails(remote_user);
+            email, name = await getEmails(remote_user);
         }
-
         let subscriber = await Subscriber.findOne({ email });
         if (subscriber) {
             subscriber.subscribed = true;
