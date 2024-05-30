@@ -153,7 +153,7 @@ const scheduleEmails = () => {
 // Subscribe to email notifications
 router.post('/subscribe', async (req, res) => {
     try {
-        const remote_user = req.headers('remote_user');
+        const remote_user = req.headers['remote_user'];
         let email = "Not Found";
         let name = "Not Found";
         if (!remote_user) {
