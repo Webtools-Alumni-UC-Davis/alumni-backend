@@ -23,6 +23,7 @@ function getEmails(remote_user){
     const client = ldap.createClient({
         url: "ldaps://ldap.ucdavis.edu:636",
     });
+    console.log(remote_user)
 
     // Define the search base and filter
     const searchBase = "ou=People,dc=ucdavis,dc=edu";
