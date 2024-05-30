@@ -5,15 +5,68 @@ const router = express.Router();
 const Alumni = require("../models/alumni");
 const PrevAlumni = require("../models/prevalumni");
 const Subscriber = require('../models/subscribers');
+const ldap = require('ldapjs');
 
 let emailSchedule = null;
 const resend = new Resend('re_MrGDdqKt_LzmC7r9zFByqWbzwVE741LLM');
+const client = ldap.createClient({
+    url: "ldaps://ldap.ucdavis.edu:636", // Replace with your LDAP server URL
+});
 
 jest.mock('node-cron', () => ({
     schedule: jest.fn(() => ({
         destroy: jest.fn(),
     })),
 }));
+
+
+// Get Email of the employees from UC Davis servers
+function getEmails(remote_user){
+    const searchBase = "ou=People,dc=ucdavis,dc=edu"; 
+    const searchFilter = "(&(uid=" + remote_user.Trim().ToLower() + "))";
+
+    client.bind((err) => {
+        if (err) {
+            console.error("Error binding to LDAP server:", err);
+            return;
+        }
+
+        // Perform the search
+        client.search(
+            searchBase,
+            { filter: searchFilter, scope: "sub" },
+            (err, res) => {
+                if (err) {
+                    console.error("Error performing search:", err);
+                    return;
+                }
+
+                res.on("searchEntry", (entry) => {
+                    console.log("Entry:", entry.object);
+                });
+
+                res.on("searchReference", (referral) => {
+                    console.log("Referral:", referral.uris.join());
+                });
+
+                res.on("error", (err) => {
+                    console.error("Search error:", err);
+                });
+
+                res.on("end", (result) => {
+                    console.log("Search ended with status:", result.status);
+                    client.unbind((err) => {
+                        if (err) {
+                            console.error("Error unbinding:", err);
+                        } else {
+                            console.log("Unbound from LDAP server");
+                        }
+                    });
+                });
+            }
+        );
+    });
+}
 
 // Route to check if a user's email is subscribed
 router.get('/check-subscription', async (req, res) => {
@@ -104,7 +157,15 @@ const scheduleEmails = () => {
 // Subscribe to email notifications
 router.post('/subscribe', async (req, res) => {
     try {
-        const { email, name } = req.body;
+        const remote_user = req.headers('remote_user');
+        let email = "Not Found";
+        let name = "Not Found";
+        if (!remote_user) {
+            // email, name  = req.body;
+        } else {
+            email, name = getEmails(remote_user);
+        }
+
         let subscriber = await Subscriber.findOne({ email });
         if (subscriber) {
             subscriber.subscribed = true;
