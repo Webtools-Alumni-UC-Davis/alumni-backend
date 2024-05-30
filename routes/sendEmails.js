@@ -37,27 +37,21 @@ function getEmails(remote_user){
                 console.error("Error performing search:", err);
                 return;
             }
-
-            client.search("o=example", opts, (err, res) => {
-                assert.ifError(err);
-
-                res.on("searchRequest", (searchRequest) => {
-                    console.log("searchRequest: ", searchRequest.messageId);
-                });
-                res.on("searchEntry", (entry) => {
-                    console.log("entry: " + JSON.stringify(entry.pojo));
-                });
-                res.on("searchReference", (referral) => {
-                    console.log("referral: " + referral.uris.join());
-                });
-                res.on("error", (err) => {
-                    console.error("error: " + err.message);
-                });
-                res.on("end", (result) => {
-                    console.log("status: " + result.status);
-                });
+            res.on("searchRequest", (searchRequest) => {
+                console.log("searchRequest: ", searchRequest.messageId);
             });
-
+            res.on("searchEntry", (entry) => {
+                console.log("entry: " + JSON.stringify(entry.pojo));
+            });
+            res.on("searchReference", (referral) => {
+                console.log("referral: " + referral.uris.join());
+            });
+            res.on("error", (err) => {
+                console.error("error: " + err.message);
+            });
+            res.on("end", (result) => {
+                console.log("status: " + result.status);
+            });
         }
     );
 }
