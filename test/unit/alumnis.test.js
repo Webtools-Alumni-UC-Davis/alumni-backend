@@ -10,6 +10,16 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 let mongoServer;
 let mongoConnection;
 
+jest.mock("node-cron", () => {
+    const originalModule = jest.requireActual("node-cron");
+    return {
+        ...originalModule,
+        schedule: jest.fn(() => ({
+            destroy: jest.fn(),
+        })),
+    };
+});
+
 describe('Alumni Routes', () => {
     beforeAll(async () => {
         mongoServer = await MongoMemoryServer.create();

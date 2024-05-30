@@ -40,15 +40,12 @@ function getEmails(remote_user){
             }
 
             res.on("searchEntry", (entry) => {
-                console.log("Entry:", entry.object);
-            });
-
-            res.on("searchReference", (referral) => {
-                console.log("Referral:", referral.uris.join());
-            });
-
-            res.on("error", (err) => {
-                console.error("Search error:", err);
+                console.log("Raw Entry:", entry);
+                if (entry) {
+                    console.log("Entry:", entry.object);
+                } else {
+                    console.log("Entry is undefined or empty.");
+                }
             });
 
             res.on("end", (result) => {
