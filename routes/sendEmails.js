@@ -20,52 +20,58 @@ const resend = new Resend('re_MrGDdqKt_LzmC7r9zFByqWbzwVE741LLM');
 
 // Get Email of the employees from UC Davis servers
 async function getEmails(remote_user) {
-    const client = ldap.createClient({
-        url: "ldaps://ldap.ucdavis.edu:636",
-    });
+    return new Promise((resolve, reject) => {
+        const client = ldap.createClient({
+            url: "ldaps://ldap.ucdavis.edu:636",
+        });
 
-    // Define the search base and filter
-    const searchBase = "ou=People,dc=ucdavis,dc=edu";
-    const searchFilter = "(uid=" + remote_user + ")";
-    let mail = null;
-    let displayName = null;
+        const searchBase = "ou=People,dc=ucdavis,dc=edu";
+        const searchFilter = `(uid=${remote_user})`;
+        let mail = null;
+        let displayName = null;
 
-    try {
-        // Perform the search
-        client.search(
-            searchBase,
-            { filter: searchFilter, scope: "sub" },
-            (err, res) => {
-                if (err) {
-                    console.error("Error performing search:", err);
-                    return;
-                }
+        try {
+            // Perform the search
+            client.search(
+                searchBase,
+                { filter: searchFilter, scope: "sub" },
+                (err, res) => {
+                    if (err) {
+                        console.error("Error performing search:", err);
+                        reject(err);
+                        return;
+                    }
 
-                res.on("searchEntry", (entry) => {
-                    console.log("entry: " + entry.pojo);
-                    entry.pojo.attributes.forEach((attribute) => {
-                        if (attribute.type === "mail") {
-                            mail = attribute.values[0]; // Assuming only one value
-                        } else if (attribute.type === "displayName") {
-                            displayName = attribute.values[0]; // Assuming only one value
-                        }
+                    res.on("searchEntry", (entry) => {
+                        entry.pojo.attributes.forEach((attribute) => {
+                            if (attribute.type === "mail") {
+                                mail = attribute.values[0]; // Assuming only one value
+                            } else if (attribute.type === "displayName") {
+                                displayName = attribute.values[0]; // Assuming only one value
+                            }
+                        });
                     });
-                });
 
-                res.on("error", (err) => {
-                    console.error("error: " + err.message);
-                });
+                    res.on("error", (err) => {
+                        console.error("error: " + err.message);
+                        reject(err);
+                    });
 
-                res.on("end", (result) => {
-                    console.log("status: " + result.status);
-                    return mail, displayName;
-                });
-            }
-        );
-    } catch (error) {
-        console.error("An error occurred:", error);
-        return "Not Found", "Not Found";
-    }
+                    res.on("end", (result) => {
+                        if (mail && displayName) {
+                            resolve({ mail, displayName });
+                        } else {
+                            reject(new Error("mail or displayName not found"));
+                        }
+                        client.unbind();
+                    });
+                }
+            );
+        } catch (error) {
+            console.error("An error occurred:", error);
+            reject(error);
+        }
+    });
 }
 
 // Route to check if a user's email is subscribed
@@ -161,11 +167,15 @@ router.post('/subscribe', async (req, res) => {
         let email = "Not Found";
         let name = "Not Found";
         if (!remote_user) {
-            // email, name  = req.body;
+            ({ email, name } = req.body);
         } else {
-            email, name = await getEmails(remote_user);
+            const result = await getEmails(remote_user);
+            email = result.mail;
+            name = result.displayName;
         }
+
         console.log(email, name);
+        
         let subscriber = await Subscriber.findOne({ email });
         if (subscriber) {
             subscriber.subscribed = true;
