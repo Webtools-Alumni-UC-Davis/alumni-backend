@@ -19,7 +19,7 @@ const resend = new Resend('re_MrGDdqKt_LzmC7r9zFByqWbzwVE741LLM');
 
 
 // Get Email of the employees from UC Davis servers
-function getEmails(remote_user){
+function getEmails(remote_user) {
     const client = ldap.createClient({
         url: "ldaps://ldap.ucdavis.edu:636",
     });
@@ -29,41 +29,44 @@ function getEmails(remote_user){
     const searchFilter = "(uid=" + remote_user + ")";
     let mail = null;
     let displayName = null;
-    // Perform the search
-    client.search(
-        searchBase,
-        { filter: searchFilter, scope: "sub" },
-        (err, res) => {
-            if (err) {
-                console.error("Error performing search:", err);
-                return;
-            }
-            res.on("searchRequest", (searchRequest) => {
-                console.log("searchRequest: ", searchRequest.messageId);
-            });
-            res.on("searchEntry", (entry) => {
-                console.log("entry: " + entry.pojo);
-                entry.pojo.attributes.forEach((attribute) => {
-                    if (attribute.type === "mail") {
-                        mail = attribute.values[0]; // Assuming only one value
-                    } else if (attribute.type === "displayName") {
-                        displayName = attribute.values[0]; // Assuming only one value
-                    }
+
+    try {
+        // Perform the search
+        client.search(
+            searchBase,
+            { filter: searchFilter, scope: "sub" },
+            (err, res) => {
+                if (err) {
+                    console.error("Error performing search:", err);
+                    return;
+                }
+
+                res.on("searchEntry", (entry) => {
+                    console.log("entry: " + entry.pojo);
+                    entry.pojo.attributes.forEach((attribute) => {
+                        if (attribute.type === "mail") {
+                            mail = attribute.values[0]; // Assuming only one value
+                        } else if (attribute.type === "displayName") {
+                            displayName = attribute.values[0]; // Assuming only one value
+                        }
+                    });
                 });
-            });
-            res.on("searchReference", (referral) => {
-                console.log("referral: " + referral.uris.join());
-            });
-            res.on("error", (err) => {
-                console.error("error: " + err.message);
-            });
-            res.on("end", (result) => {
-                console.log("status: " + result.status);
-            });
-        }
-    );
-    console.log(mail, displayName);
-    return mail, displayName;
+
+                res.on("error", (err) => {
+                    console.error("error: " + err.message);
+                });
+
+                res.on("end", (result) => {
+                    console.log("status: " + result.status);
+                    console.log(mail, displayName);
+                    return mail, displayName;
+                });
+            }
+        );
+    } catch (error) {
+        console.error("An error occurred:", error);
+        // Handle the error as needed
+    }
 }
 
 // Route to check if a user's email is subscribed
