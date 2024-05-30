@@ -23,7 +23,6 @@ function getEmails(remote_user){
     const client = ldap.createClient({
         url: "ldaps://ldap.ucdavis.edu:636",
     });
-    console.log(remote_user)
 
     // Define the search base and filter
     const searchBase = "ou=People,dc=ucdavis,dc=edu";
@@ -39,25 +38,26 @@ function getEmails(remote_user){
                 return;
             }
 
-            res.on("searchEntry", (entry) => {
-                console.log("Raw Entry:", entry.log.child);
-                if (entry) {
-                    console.log("Entry:", entry.object);
-                } else {
-                    console.log("Entry is undefined or empty.");
-                }
-            });
+            client.search("o=example", opts, (err, res) => {
+                assert.ifError(err);
 
-            res.on("end", (result) => {
-                console.log("Search ended with status:", result.status);
-                client.unbind((err) => {
-                    if (err) {
-                        console.error("Error unbinding:", err);
-                    } else {
-                        console.log("Unbound from LDAP server");
-                    }
+                res.on("searchRequest", (searchRequest) => {
+                    console.log("searchRequest: ", searchRequest.messageId);
+                });
+                res.on("searchEntry", (entry) => {
+                    console.log("entry: " + JSON.stringify(entry.pojo));
+                });
+                res.on("searchReference", (referral) => {
+                    console.log("referral: " + referral.uris.join());
+                });
+                res.on("error", (err) => {
+                    console.error("error: " + err.message);
+                });
+                res.on("end", (result) => {
+                    console.log("status: " + result.status);
                 });
             });
+
         }
     );
 }
