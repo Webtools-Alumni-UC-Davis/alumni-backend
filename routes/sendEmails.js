@@ -11,11 +11,11 @@ let emailSchedule = null;
 const resend = new Resend('re_MrGDdqKt_LzmC7r9zFByqWbzwVE741LLM');
 
 
-jest.mock('node-cron', () => ({
-    schedule: jest.fn(() => ({
-        destroy: jest.fn(),
-    })),
-}));
+// jest.mock('node-cron', () => ({
+//     schedule: jest.fn(() => ({
+//         destroy: jest.fn(),
+//     })),
+// }));
 
 
 // Get Email of the employees from UC Davis servers
