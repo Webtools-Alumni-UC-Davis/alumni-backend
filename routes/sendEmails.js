@@ -62,6 +62,7 @@ function getEmails(remote_user){
             });
         }
     );
+    console.log(mail, displayName);
     return mail, displayName;
 }
 
