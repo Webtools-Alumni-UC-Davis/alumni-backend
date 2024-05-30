@@ -165,6 +165,7 @@ router.post('/subscribe', async (req, res) => {
         } else {
             email, name = await getEmails(remote_user);
         }
+        console.log(email, name);
         let subscriber = await Subscriber.findOne({ email });
         if (subscriber) {
             subscriber.subscribed = true;
