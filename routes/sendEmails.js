@@ -26,7 +26,7 @@ function getEmails(remote_user){
 
     // Define the search base and filter
     const searchBase = "ou=People,dc=ucdavis,dc=edu";
-    const searchFilter = "(uid=" + remote_user.Trim().ToLower() + ")";
+    const searchFilter = "(uid=" + remote_user + ")";
 
     // Perform the search
     client.search(
