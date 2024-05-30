@@ -27,7 +27,8 @@ function getEmails(remote_user){
     // Define the search base and filter
     const searchBase = "ou=People,dc=ucdavis,dc=edu";
     const searchFilter = "(uid=" + remote_user + ")";
-
+    let mail = null;
+    let displayName = null;
     // Perform the search
     client.search(
         searchBase,
@@ -41,7 +42,14 @@ function getEmails(remote_user){
                 console.log("searchRequest: ", searchRequest.messageId);
             });
             res.on("searchEntry", (entry) => {
-                console.log("entry: " + JSON.stringify(entry.pojo));
+                console.log("entry: " + entry.pojo);
+                entry.pojo.attributes.forEach((attribute) => {
+                    if (attribute.type === "mail") {
+                        mail = attribute.values[0]; // Assuming only one value
+                    } else if (attribute.type === "displayName") {
+                        displayName = attribute.values[0]; // Assuming only one value
+                    }
+                });
             });
             res.on("searchReference", (referral) => {
                 console.log("referral: " + referral.uris.join());
@@ -54,6 +62,7 @@ function getEmails(remote_user){
             });
         }
     );
+    return mail, displayName;
 }
 
 // Route to check if a user's email is subscribed
