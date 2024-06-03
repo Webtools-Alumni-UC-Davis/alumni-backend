@@ -262,7 +262,7 @@ const findAlumni = async () => {
         for (const alumni of alumnis) {
             const matchFound = await Ezen.findOne({ name: alumni.company });
 
-            if (matchFound) {
+            if (matchFound && !matchFound.alumnis.includes(alumni)) {
                 matchFound.alumnis.push({ name: alumni.name, position:
                     alumni.job, url: alumni.url});
                 await matchFound.save();
